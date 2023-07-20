@@ -1,75 +1,83 @@
-import { useState } from "react"
-import Square from "../squares/Square"
+import React, { useState } from "react";
+import './styles.css';
+import Square from "../squares/Square";
 
-//pass in props by giving the info as html attributes 
-// the attribute name should match the prop name used in the component the prop has been passed to. 
-export default function Board ({title, color}) { 
+export default function Board({ title, color }) {
+  // Create a state which will tag the 9 squares as array items thus giving index positions
+  // Empty squares will be tagged as null
+  // Clicked squares will either be X or O
+  const [squares, setSquares] = useState(Array(9).fill(null));
 
-    // create a state which will tag the 9 squares as array items thus giving index positions 
-    // empty squares will be tagged as null 
-    // clicked squares will either be x or o
+  // Define a state to keep track of the player
+  const [isNext, setIsNext] = useState(true);
 
-    const [squares, setSquares] = useState(Array(9).fill(null))
-    // when you need your child to communicate back to the parent we can pass down a function as a prop to the child 
-    // use the return of the function to update our state 
+  const WIN_CONDITIONS = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6],
+  ];
 
-    // define a state to keep track of the player 
-    const [isNext, setIsNext] = useState(true)
+  const checkWinner = (board) => {
+    for (let i = 0; i < WIN_CONDITIONS.length; i++) {
+      const [a, b, c] = WIN_CONDITIONS[i];
+      if (board[a] && board[a] === board[b] && board[b] === board[c]) {
+        return board[a];
+      }
+    }
+    return null;
+  };
 
-
-    // 1. this function should create a copy of our squares arrays. 
-    // how do we create copies of arrays - reassignment , in build methods. 
-    //2. this method then utilizes the copy to add the first value i.e. x to the first square 
-    // 3. if the value is added we then need to inform react that our component has an update , do this by updating the state value 
-    function handleClick (i) {
-
-        // returning early to stop overwriting 
-        // this checks for if a click event has happened.
-        if (squares[i]){
-             return;
-        }
-        // copy 
-        const nextSquare = squares.slice();
-
-        // switching players 
-        if(isNext) {
-            //set value according to player
-            nextSquare[i] = "X"
-        } else {
-            nextSquare[i] = "O"
-        }
-        //update our component by updating the state. 
-        setSquares(nextSquare)
-        setIsNext(!isNext)  //switching the value 
-
+  // This function should create a copy of our squares array.
+  // We can create copies of arrays using array spreading or array.map()
+  // Then, this method utilizes the copy to add the value (X or O) to the clicked square.
+  // If the value is added, we then need to inform React that our component has an update by updating the state.
+  function handleClick(i) {
+    // Returning early to stop overwriting if a square is already clicked.
+    if (squares[i] || checkWinner(squares)) {
+      return;
     }
 
-  
-    return (
-        <>
-        <h4 style={{
-            color : color
-        }}>{title}</h4>
+    // Copy the squares array using array spreading
+    const nextSquares = [...squares];
 
-        <div className="board-row">
-           <Square value={squares[0]}  onSquareClick={() => handleClick(0) } />
-           <Square value={squares[1]} onSquareClick={() => handleClick(1) } />
-           <Square value={squares[2]} onSquareClick={() => handleClick(2) } />
-        </div>
+    // Switching players
+    nextSquares[i] = isNext ? "X" : "O";
 
-       <div className="board-row">
-       <Square value={squares[3]} onSquareClick={() => handleClick(3) } />
-       <Square value={squares[4]} onSquareClick={() => handleClick(4) } />
-       <Square value={squares[5]} onSquareClick={() => handleClick(5) }/>
-       </div>
+    // Update the state with the new squares array and switch the player
+    setSquares(nextSquares);
+    setIsNext(!isNext);
+  }
 
-       <div className="board-row">
-       <Square value={squares[6]} onSquareClick={() => handleClick(6) } />
-       <Square value={squares[7]} onSquareClick={() => handleClick(7) } />
-       <Square value={squares[8]} onSquareClick={() => handleClick(8) } />
+  const winner = checkWinner(squares);
 
-        </div>
-        </>
-   
-    )
+  return (
+    <>
+      <h4 style={{ color: color, padding: '10px' }}>{title}</h4>
+
+      <div className="board-row">
+        <Square value={squares[0]} onSquareClick={() => handleClick(0)} />
+        <Square value={squares[1]} onSquareClick={() => handleClick(1)} />
+        <Square value={squares[2]} onSquareClick={() => handleClick(2)} />
+      </div>
+
+      <div className="board-row">
+        <Square value={squares[3]} onSquareClick={() => handleClick(3)} />
+        <Square value={squares[4]} onSquareClick={() => handleClick(4)} />
+        <Square value={squares[5]} onSquareClick={() => handleClick(5)} />
+      </div>
+
+      <div className="board-row">
+        <Square value={squares[6]} onSquareClick={() => handleClick(6)} />
+        <Square value={squares[7]} onSquareClick={() => handleClick(7)} />
+        <Square value={squares[8]} onSquareClick={() => handleClick(8)} />
+      </div>
+
+      {winner && <p style={{ color: color, padding: '10px' }}>{`Winner is Player: ${winner}`}</p>}
+    </>
+  );
 }
